@@ -1,0 +1,104 @@
+﻿@page "/submissions"
+@inject HttpClient httpClient
+
+<PageTitle>Submissions</PageTitle>
+
+<h1>All submissions</h1>
+@if(status != null)
+    {
+        <br>
+        <p>Status: @status</p>
+    }
+@if (submissions == null)
+{
+    <label for="auth">Enter password:</label>
+    <br>
+    <input @bind="@Password" type="password" id="auth" name="auth">
+    <br>
+    <button type="button" @onclick="@GetAllSubmissions">Authenticate</button>
+    
+}
+else
+{
+    if(winner != null)
+    {
+        <h2>The winner is @winner!</h2>
+    }
+    <button type="button" @onclick="@DrawWinner">Draw winner!</button>
+    <br>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>First name</th>
+                <th>Last name</th>
+                <th>Email</th>
+                <th>Serial number</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var submission in submissions)
+            {
+                <tr>
+                    <td>@submission.FirstName</td>
+                    <td>@submission.LastName</td>
+                    <td>@submission.Email</td>
+                    <td>@submission.SerialNumber</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <label for="page">Enter page number:</label>
+    <br>
+    <input @bind="@PageNum" type="number" min="1" id="page" name="page">
+    <button type="button" @onclick="@GetAllSubmissions">Go to page</button>
+    <br>
+}
+
+@code {
+    private List<Submission> submissions;
+    private string winner;
+    private string status;
+
+    private string Password { get; set; } = string.Empty;
+    private int PageNum { get; set; } = 1;
+
+    public async Task GetAllSubmissions()
+    {
+        if(PageNum < 1)
+        {
+            status = "Page number must be at least 1.";
+            return;
+        }
+        status = "Authenticating. Please wait.";
+        StateHasChanged();
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"submission/{PageNum}");
+        request.Headers.Add("password", Password);
+        var response = await httpClient.SendAsync(request);
+        if (response.IsSuccessStatusCode)
+        {
+            submissions = await response.Content.ReadFromJsonAsync<List<Submission>>();
+            status = null;
+        } else
+        {
+            status = "Wrong password.";
+        }
+    }
+
+    public async Task DrawWinner()
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, "submission/draw/");
+        request.Headers.Add("password", Password);
+        var response = await httpClient.SendAsync(request);
+        if (response.IsSuccessStatusCode)
+        {
+            Submission winningSubmission = await response.Content.ReadFromJsonAsync<Submission>();
+            winner = $"{winningSubmission.FirstName} {winningSubmission.LastName}";
+            status = null;
+            StateHasChanged();
+        } else
+        {
+            status = await response.Content.ReadAsStringAsync();
+        }
+
+    }
+}

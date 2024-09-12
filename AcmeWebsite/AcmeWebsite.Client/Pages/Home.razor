@@ -1,0 +1,60 @@
+﻿@page "/"
+@using System.ComponentModel.DataAnnotations
+@inject HttpClient httpClient
+
+<PageTitle>Prize Competition</PageTitle>
+
+<h1>Acme Corporation Prize Draw!</h1>
+
+<h2>Enter your information below</h2>
+
+<p>We promise to sell all your data :)</p>
+
+<EditForm Model="submission" OnValidSubmit="Submit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <label for="fname">First name:</label><br>
+    <input @bind-value="submission.FirstName" type="text" id="fname" name="fname"><br>
+
+    <label for="lname">Last name:</label><br>
+    <input @bind-value="submission.LastName" type="text" id="lname" name="lname"><br>
+
+    <label for="email">Email address:</label><br>
+    <input @bind-value="submission.Email" type="text" id="email" name="email"><br>
+
+    <label for="serial">Serial number:</label><br>
+    <input @bind-value="submission.SerialNumber" type="text" id="serial" name="serial"><br>
+
+    <br>
+    <input @bind-value="submission.Above18" type="checkbox" id="above18" name="above18">
+    <label for="above18">I hereby confirm that I am at least 18 years old.</label><br>
+
+    <br>
+    <input type="submit" value="Submit">
+</EditForm>
+
+@if(!string.IsNullOrEmpty(status))
+{
+    <br>
+    <p>Status: @status</p>
+}
+
+@code {
+    private Submission submission = new Submission();
+
+    private string status { get; set; }
+
+    public async Task Submit()
+    {
+        status = "Processing. Please wait.";
+        StateHasChanged();
+        var response = await httpClient.PostAsJsonAsync("submission/", submission);
+        if(response.IsSuccessStatusCode) {
+            status = "OK";
+        } else
+        {
+            status = await response.Content.ReadAsStringAsync();
+        }
+    }
+}
