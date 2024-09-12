@@ -9,7 +9,7 @@ namespace AcmeWebsite.Client
         [Required(ErrorMessage = "Last name is required.")]
         public string LastName { get; set; }
         [Required(ErrorMessage = "Email address is required.")]
-        [EmailAddress(ErrorMessage = "A valid email address must be valid.")]
+        [EmailAddress(ErrorMessage = "A valid email address is required.")]
         public string Email { get; set; }
         [Required(ErrorMessage = "A valid serial number is required.")]
         public string SerialNumber { get; set; }
