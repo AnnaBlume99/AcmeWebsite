@@ -27,10 +27,5 @@ namespace AcmeWebsite.Client
 
             return FirstName == item.FirstName && LastName == item.LastName && Email == item.Email && SerialNumber == item.SerialNumber;
         }
-
-        public override int GetHashCode()
-        {
-            return FirstName.GetHashCode() + LastName.GetHashCode() + Email.GetHashCode() + SerialNumber.GetHashCode();
-        }
     }
 }
